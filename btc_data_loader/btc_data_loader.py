@@ -53,13 +53,14 @@ class BTCDataLoader:
     self.interval = interval
 
   def __iter__(self):
+    """Iterate through data by week. """
     self.curweek = self.start_date
-    self.nextweek = self.curweek + timedelta(days=8)
+    self.nextweek = self.curweek + timedelta(days=6)
     return self
   
   def __next__(self):
+    """Get next week's data until end of data set. """
     if self.nextweek > self.end_date:
-      print(self.nextweek, self.end_date)
       raise StopIteration
 
     curweekstr = self.curweek.strftime(BTCDataLoader.dt_format)
