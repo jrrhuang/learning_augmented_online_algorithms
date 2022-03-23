@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Setup for laoa.
+Setup for learning_augmented_online_algorithms.
 """
 
 import setuptools
@@ -9,7 +9,7 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="laoa",
+    name="learning_augmented_online_algorithms",
     version="0.0.1",
     author="Jerry Huang",
     author_email="jrr.huang8@gmail.com",
