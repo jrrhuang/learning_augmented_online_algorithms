@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Setup for atgym.
+Setup for laoa.
 """
 
 import setuptools
