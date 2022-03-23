@@ -9,7 +9,7 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="learning_augmented_online_algorithms",
+    name="laoa",
     version="0.0.1",
     author="Jerry Huang",
     author_email="jrr.huang8@gmail.com",
