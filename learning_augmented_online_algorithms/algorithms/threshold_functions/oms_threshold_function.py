@@ -1,11 +1,12 @@
-from learning_augmented_online_algorithms.algorithms.threshold_functions.abstract_threshold_function import AbstractThresholdFunction
+from ctypes import ArgumentError
+from .abstract_threshold_function import AbstractThresholdFunction
 
 
 class OMSThresholdFunction(AbstractThresholdFunction):
     """
     Threshold function for one-max-search, in which the algorithm
-    simply uses all resources the first time when the price exceeds
-    the reservation price.
+    uses all resources the first time when the price exceeds the
+    reservation price.
     """
     def __init__(self, L, U, lmbda=1.0):
         super().__init__(L, U, lmbda)
@@ -41,9 +42,20 @@ class OMSThresholdFunction(AbstractThresholdFunction):
         reservation price (float): when price exceeds reservation price in
             one-max-search, a trade is executed.
         """
-        if pred >= self.L and pred < self.L * self.eta:
+        if pred is None and self.lmbda < 1.0:
+            raise TypeError("cannot use threshold function with "
+                "lmbda < 1.0 when there is no prediction")
+
+        # handle case where prediction is out of bounds and self.lmbda == 1.0
+        # using pure algorithm
+        if pred < self.L or pred > self.U or self.lmbda == 1.0:
+            return (self.L * self.U) ** 0.5
+
+        print("oms_threshold_function.py line 45")
+        # pred now bounded between L and U
+        if pred < self.L * self.eta:
             return self.L * self.eta
-        if pred >= self.L * self.eta and pred < self.L * self.gamma:
+        elif pred < self.L * self.gamma:
             return self.lmbda * self.L * self.gamma + (1 - self.lmbda) * pred / self.eta
-        if pred >= self.L * self.gamma and pred <= self.U:
+        else:
             return self.L * self.gamma
