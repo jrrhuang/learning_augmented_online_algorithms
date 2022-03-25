@@ -7,7 +7,8 @@ class AbstractThresholdFunction:
     algorithms, which use a threshold function to determine the amount of
     resources that need to be reserved, while the rest can be greedily
     allocated. This abstract class provides the skeleton for one-max-search
-    and one-way-trading. Assumes that prices can arbitrarily bounded.
+    and one-way-trading threshold functions. Assumes that prices can
+    arbitrarily bounded.
     """
     def __init__(self, L, U, lmbda):
         """
