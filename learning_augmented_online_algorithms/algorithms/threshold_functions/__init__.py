@@ -1,2 +1,3 @@
 from .abstract_threshold_function import AbstractThresholdFunction
 from .oms_threshold_function import OMSThresholdFunction
+from .owt_threshold_function import OWTThresholdFunction
