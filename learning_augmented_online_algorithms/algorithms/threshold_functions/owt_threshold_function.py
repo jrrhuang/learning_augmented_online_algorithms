@@ -41,11 +41,11 @@ class OWTThresholdFunction(AbstractThresholdFunction):
         if pred is None and self.lmbda < 1.0:
             raise TypeError("cannot use threshold function with "
                             "lmbda < 1.0 when there is no prediction")
-
-        # handle case where prediction is out of bounds and self.lmbda == 1.0
-        # using pure algorithm
-        if pred < self.L or pred > self.U or self.lmbda == 1.0:
-            return (self.L * self.U) ** 0.5
+        elif pred is None:
+            # Default to pure online algorithm
+            return self.L + (self.alpha * self.L - self.L) * np.exp(self.alpha * w)
+        # clip if prediction is out of bounds
+        pred = np.clip(pred, self.L, self.U)
 
         # pred now bounded between L and U
         # we now solve for the bounds used in the piecewise function for computing the threshold

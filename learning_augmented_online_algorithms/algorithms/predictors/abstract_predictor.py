@@ -8,19 +8,20 @@ class AbstractPredictor:
     full or in part in the augmented online algorithms.
     """
     @abstractmethod
-    def __init__(self):
+    def __init__(self, L, U):
         """
         Initialization steps of predictor.
         """
-        pass
+        self.L = L
+        self.U = U
     
     @abstractmethod
-    def predict(self, arr):
+    def predict(self, data):
         """
         Given a time-series array of data, predicts the next value.
 
         Argument:
-        arr (list of floats) - time-series data to extrapolate from
+        data (list of list of floats) - time-series data to extrapolate from
 
         Returns:
         prediction (float) - estimation of next value in time-series
