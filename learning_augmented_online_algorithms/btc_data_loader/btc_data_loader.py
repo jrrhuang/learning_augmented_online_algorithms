@@ -1,73 +1,88 @@
-from datetime import datetime, timedelta
+"""
+Module for loading BTC data from csv files.
+"""
+from __future__ import annotations
 
+from datetime import datetime, timedelta
 import pandas as pd
 
+
+BASE_URL = 'https://raw.githubusercontent.com/jrrhuang/data/main/BTCUSD/'
+DT_FORMAT = '%Y-%m-%d'
+DATA_PATHS = []
+for year in range(2022, 2014, -1):
+    DATA_PATHS.append(BASE_URL + f'gemini_BTCUSD_{year}_1min.csv')
+START_DATE_2015 = datetime.strptime('2015-10-08', DT_FORMAT)
+END_DATE_2022 = datetime.strptime('2022-03-20', DT_FORMAT)
+
+
 class BTCDataLoader:
-  """
-  Interface for loading Bitcoin data sequentially from csv files. Loads one-week
-  of data starting on the Monday of each week.
-  """
-  base_url = 'https://raw.githubusercontent.com/jrrhuang/data/main/BTCUSD/'
-  data_paths = []
-  for year in range(2022, 2014, -1):
-    data_paths.append(base_url + f'gemini_BTCUSD_{year}_1min.csv')
-
-  dt_format = '%Y-%m-%d'
-  start_date_2015 = datetime.strptime('2015-10-08', '%Y-%m-%d')
-  end_date_2022 = datetime.strptime('2022-03-20', '%Y-%m-%d')
-
-  def __init__(self, start_date_str='2015-10-07', end_date_str=None, interval=5):
     """
-    Arguments:
-    start_date_str (str) - default beginning of data
-    end_date_str (str) - default end of data
-    interval (int) - number of minutes per timestep
+    Iterator for BTCData.
+
+    Interface for loading Bitcoin data sequentially from csv files. Loads
+    one-week of data starting on the Monday of each week.
     """
-    # find start and end date in data, starting on Monday of the week
-    if end_date_str is None:
-      end_date_str = datetime.now().strftime(BTCDataLoader.dt_format)
-    
-    start_date = datetime.strptime(start_date_str, BTCDataLoader.dt_format)
-    end_date = datetime.strptime(end_date_str, BTCDataLoader.dt_format)
-    # bound start and end date
-    if start_date < BTCDataLoader.start_date_2015:
-      start_date = BTCDataLoader.start_date_2015
-    if end_date > BTCDataLoader.end_date_2022:
-      end_date = BTCDataLoader.end_date_2022
-    # find first Sunday - dataframe starts reading on Monday
-    weekday = start_date.weekday()
-    days_to_sunday = 6 - weekday
-    self.start_date = start_date + timedelta(days=days_to_sunday)
-    # find cutoff of last day
-    self.end_date = end_date + timedelta(days=1)
 
-    # load in data
-    start_date_str = self.start_date.strftime(BTCDataLoader.dt_format)
-    end_date_str = self.end_date.strftime(BTCDataLoader.dt_format)
-    self.df = pd.concat([pd.read_csv(data, skiprows=1, parse_dates=['Date'], index_col=['Date'])
-                         for data in BTCDataLoader.data_paths])['Close']
-    # slice from start to finish and reverse direction
-    self.df = self.df.sort_index().loc[start_date_str: end_date_str]
+    def __init__(self, start_date_str: str = '2015-10-07',
+                 end_date_str: str = None, interval: int = 5) -> None:
+        """
+        Initialize BTCDaetaLoader iterator object.
 
-    # store interval of each timestep
-    self.interval = interval
+        Arguments:
+        start_date_str (str) - start date of BTC data trace
+        end_date_str (str) - end date of BTC data trace
+        interval (int) - number of minutes per timestep
 
-  def __iter__(self):
-    """Iterate through data by week. """
-    self.curweek = self.start_date
-    self.nextweek = self.curweek + timedelta(days=6)
-    return self
-  
-  def __next__(self):
-    """Get next week's data until end of data set. """
-    if self.nextweek > self.end_date:
-      raise StopIteration
+        Notes:
+        Both `start_date_str` and `end_date_str` should be in YYYY-MM-DD format
+        """
+        # find start and end date in data, starting on Monday of the week
+        if end_date_str is None:
+            end_date_str = datetime.now().strftime(DT_FORMAT)
 
-    curweekstr = self.curweek.strftime(BTCDataLoader.dt_format)
-    nextweekstr = self.nextweek.strftime(BTCDataLoader.dt_format)
-    data = self.df.loc[curweekstr: nextweekstr]
+        start_date = datetime.strptime(start_date_str, DT_FORMAT)
+        end_date = datetime.strptime(end_date_str, DT_FORMAT)
+        # bound start and end date
+        if start_date < START_DATE_2015:
+            start_date = START_DATE_2015
+        if end_date > END_DATE_2022:
+            end_date = END_DATE_2022
+        # find first Sunday - dataframe starts reading on Monday
+        weekday = start_date.weekday()
+        days_to_sunday = 6 - weekday
+        self.start_date = start_date + timedelta(days=days_to_sunday)
+        # find cutoff of last day
+        self.end_date = end_date + timedelta(days=1)
 
-    self.curweek = self.curweek + timedelta(days=7)
-    self.nextweek = self.nextweek + timedelta(days=7)
+        # load in data
+        start_date_str = self.start_date.strftime(DT_FORMAT)
+        end_date_str = self.end_date.strftime(DT_FORMAT)
+        self.df = pd.concat([pd.read_csv(data, skiprows=1, parse_dates=['Date'], index_col=['Date'])
+                            for data in DATA_PATHS])['Close']
 
-    return data[::self.interval]
+        # slice from start to finish and reverse direction
+        self.df = self.df.sort_index().loc[start_date_str: end_date_str]
+
+        # store interval of each timestep
+        self.interval = interval
+
+    def __iter__(self):
+        """Iterate through data by week."""
+        self.curweek = self.start_date
+        self.nextweek = self.curweek + timedelta(days=6)
+        return self
+
+    def __next__(self):
+        """Get next week's data until end of data set."""
+        if self.nextweek > self.end_date:
+            raise StopIteration
+
+        curweekstr = self.curweek.strftime(DT_FORMAT)
+        nextweekstr = self.nextweek.strftime(DT_FORMAT)
+        data = self.df.loc[curweekstr: nextweekstr]
+
+        self.curweek = self.curweek + timedelta(days=7)
+        self.nextweek = self.nextweek + timedelta(days=7)
+
+        return data[::self.interval]
