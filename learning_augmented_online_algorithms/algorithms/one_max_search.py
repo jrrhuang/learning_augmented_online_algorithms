@@ -57,6 +57,6 @@ class OneMaxSearchAlgorithm(AbstractAlgorithm):
 
         result = {}
         result['allocation'] = allocation
-        result['profit'] = np.sum(instance * allocation)
+        result['profit'] = np.sum(instance * allocation) - instance[0]
 
         return result
