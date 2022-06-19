@@ -4,7 +4,7 @@ import numpy as np
 from scipy.optimize import fsolve
 
 class OneWayTradingAlgorithm(AbstractAlgorithm):
-    def __init__(self, L, U, lmbda, predictor=None):
+    def __init__(self, L, U, lmbda, seen_instances = [], predictor=None):
         """
         Initialize threshold function used to determine resource allocation at
         each time step. Starting resource amount (w) is set to 0.0, with 1.0 as
@@ -17,6 +17,7 @@ class OneWayTradingAlgorithm(AbstractAlgorithm):
         # threshold function used in OneMaxSearch
         self.threshold = OWTThresholdFunction(L, U, lmbda)
         self.predictor = predictor
+        self.seen_instances = seen_instances
         # resource utilization amount set to zero
         self.w = 0.0
 
@@ -36,10 +37,10 @@ class OneWayTradingAlgorithm(AbstractAlgorithm):
         # iterate over exchange rate in the time-series data
         for i in range(len(instance)):
             if self.predictor is not None:
-                prediction = self.predictor.predict(instance)
+                prediction = self.predictor.predict(self.seen_instances)
             else:
                 # prediction will not be used in threshold calculation
-                prediction = np.NINF
+                prediction = None
             reservation_price = self.threshold(self.w, prediction)
 
             if instance[i] < reservation_price:
@@ -66,7 +67,8 @@ class OneWayTradingAlgorithm(AbstractAlgorithm):
                 break
         # if there are remaining resources, exchange the remaining
         # resources at the last price
-        allocation[-1] += 1 - self.w
+        if self.w <= 1:
+            allocation[-1] += 1 - self.w
 
         result = {}
         result['allocation'] = allocation

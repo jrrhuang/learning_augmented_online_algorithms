@@ -33,6 +33,6 @@ class OptimalOfflineAlgorithm(AbstractAlgorithm):
         result['allocation'] = allocation
 
         # profit is the highest price
-        result['profit'] = instance[argmax]
+        result['profit'] = instance[argmax] - instance[0]
 
         return result
